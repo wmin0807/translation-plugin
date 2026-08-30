@@ -1,0 +1,13 @@
+{
+  "name": "ff-selection-translator",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Chrome/Edge extension that translates selected text after pressing FF.",
+  "scripts": {
+    "check": "node --check background.js && node --check content.js && node --check options.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

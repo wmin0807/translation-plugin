@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FF 划词翻译设置</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div class="logo" aria-hidden="true">FF</div>
+        <div>
+          <p class="eyebrow">SELECTION TRANSLATOR</p>
+          <h1>FF 划词翻译</h1>
+          <p class="intro">选中文字，连续按两次 <kbd>F</kbd>，译文就会出现在原文下方。</p>
+        </div>
+      </header>
+
+      <form id="settings-form">
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <span class="step">01</span>
+              <h2>选择模型服务</h2>
+            </div>
+            <p>请求从浏览器直接发往所选 API。</p>
+          </div>
+
+          <div class="provider-grid" role="radiogroup" aria-label="模型服务商">
+            <label class="provider-card">
+              <input type="radio" name="provider" value="deepseek" checked />
+              <span class="provider-check" aria-hidden="true"></span>
+              <span class="provider-name">DeepSeek</span>
+              <span class="provider-note">默认 · 速度优先</span>
+            </label>
+            <label class="provider-card">
+              <input type="radio" name="provider" value="custom" />
+              <span class="provider-check" aria-hidden="true"></span>
+              <span class="provider-name">自定义</span>
+              <span class="provider-note">OpenAI 兼容接口</span>
+            </label>
+          </div>
+
+          <div id="deepseek-fields" class="field-group">
+            <label class="field">
+              <span>DeepSeek API Key</span>
+              <span class="secret-input">
+                <input id="deepseek-api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" />
+                <button class="reveal" type="button" data-target="deepseek-api-key" aria-label="显示或隐藏 API Key">显示</button>
+              </span>
+            </label>
+            <label class="field">
+              <span>模型名称</span>
+              <input id="deepseek-model" type="text" list="deepseek-models" spellcheck="false" value="deepseek-v4-flash" />
+              <datalist id="deepseek-models">
+                <option value="deepseek-v4-flash"></option>
+                <option value="deepseek-v4-pro"></option>
+              </datalist>
+              <small>默认关闭思考模式，以降低翻译延迟。</small>
+            </label>
+          </div>
+
+          <div id="custom-fields" class="field-group" hidden>
+            <label class="field wide">
+              <span>Chat Completions API 地址</span>
+              <input id="custom-api-url" type="url" spellcheck="false" placeholder="https://api.example.com/v1/chat/completions" />
+              <small>请填写完整接口地址。保存时浏览器会请求访问该域名的权限。</small>
+            </label>
+            <label class="field">
+              <span>API Key</span>
+              <span class="secret-input">
+                <input id="custom-api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" />
+                <button class="reveal" type="button" data-target="custom-api-key" aria-label="显示或隐藏 API Key">显示</button>
+              </span>
+            </label>
+            <label class="field">
+              <span>模型名称</span>
+              <input id="custom-model" type="text" spellcheck="false" placeholder="例如 gpt-5-mini" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <span class="step">02</span>
+              <h2>设置目标语言</h2>
+            </div>
+            <p>模型自动判断原文语言。</p>
+          </div>
+
+          <div class="language-row">
+            <label class="field">
+              <span>翻译为</span>
+              <select id="target-language-select">
+                <option value="简体中文">简体中文</option>
+                <option value="繁体中文">繁体中文</option>
+                <option value="英文">英文</option>
+                <option value="日文">日文</option>
+                <option value="韩文">韩文</option>
+                <option value="custom">自定义…</option>
+              </select>
+            </label>
+            <label id="custom-language-field" class="field" hidden>
+              <span>自定义语言</span>
+              <input id="custom-language" type="text" placeholder="例如：法文" />
+            </label>
+          </div>
+
+          <div class="prompt-preview">
+            <span>实际系统提示词</span>
+            <code id="prompt-preview">请将下面这段文字翻译成简体中文，只输出译文。</code>
+          </div>
+        </section>
+
+        <section class="privacy-note">
+          <span class="lock" aria-hidden="true">⌁</span>
+          <div>
+            <strong>Key 仅保存在当前浏览器本地</strong>
+            <p>使用 <code>chrome.storage.local</code>，不会同步到云端，也不经过本扩展的服务端。翻译时，Key 和选中文字会直接发送到你配置的模型服务商。</p>
+          </div>
+        </section>
+
+        <footer class="save-bar">
+          <p id="status" role="status" aria-live="polite"></p>
+          <button id="save-button" type="submit">保存配置</button>
+        </footer>
+      </form>
+    </main>
+    <script src="core.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

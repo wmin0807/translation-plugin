@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>FF Translator Browser Fixture</title>
+  </head>
+  <body>
+    <button id="select-text" type="button">选中测试文字</button>
+    <button id="simulate-ime" type="button">模拟中文输入法 FF</button>
+    <p id="source">The quick brown fox jumps over the lazy dog.</p>
+    <script>
+      const messageListeners = [];
+      const disconnectListeners = [];
+      globalThis.chrome = {
+        runtime: {
+          lastError: null,
+          connect() {
+            return {
+              onMessage: { addListener(listener) { messageListeners.push(listener); } },
+              onDisconnect: { addListener(listener) { disconnectListeners.push(listener); } },
+              postMessage(message) {
+                if (message.type !== "translate") return;
+                queueMicrotask(() => {
+                  messageListeners.forEach((listener) => listener({
+                    type: "started",
+                    requestId: message.requestId,
+                    model: "browser-test-model",
+                    targetLanguage: "简体中文",
+                  }));
+                  messageListeners.forEach((listener) => listener({
+                    type: "delta",
+                    requestId: message.requestId,
+                    text: "敏捷的棕色狐狸跳过了懒狗。",
+                  }));
+                  messageListeners.forEach((listener) => listener({
+                    type: "done",
+                    requestId: message.requestId,
+                  }));
+                });
+              },
+              disconnect() { disconnectListeners.forEach((listener) => listener()); },
+            };
+          },
+        },
+      };
+
+      document.querySelector("#select-text").addEventListener("click", () => {
+        const range = document.createRange();
+        range.selectNodeContents(document.querySelector("#source"));
+        const selection = getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      });
+
+      document.querySelector("#simulate-ime").addEventListener("click", () => {
+        document.querySelector("#select-text").click();
+        const eventOptions = {
+          key: "Process",
+          code: "KeyF",
+          isComposing: true,
+          bubbles: true,
+          cancelable: true,
+        };
+        document.dispatchEvent(new KeyboardEvent("keydown", eventOptions));
+        document.dispatchEvent(new KeyboardEvent("keydown", eventOptions));
+      });
+    </script>
+    <script src="../content.js"></script>
+  </body>
+</html>
