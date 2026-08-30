@@ -1,5 +1,5 @@
 {
-  "name": "ff-selection-translator",
+  "name": "translation-plugin",
   "version": "0.1.1",
   "private": true,
   "description": "Chrome/Edge extension that translates selected text after pressing FF.",

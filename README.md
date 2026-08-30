@@ -41,7 +41,7 @@ Firefox 暂未适配。
 ### 方法二：使用 Git
 
 ```bash
-git clone https://github.com/wmin0807/ff-selection-translator.git
+git clone https://github.com/wmin0807/translation-plugin.git
 ```
 
 然后在浏览器扩展管理页加载克隆后的目录。
