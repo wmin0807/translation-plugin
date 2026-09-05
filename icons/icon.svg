@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".18"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="28" fill="url(#bg)"/>
+  <rect x="2" y="2" width="124" height="124" rx="28" fill="url(#shine)"/>
+  <text x="64" y="80" text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="54" font-weight="800" letter-spacing="-2" fill="#ffffff">FF</text>
+  <g>
+    <circle cx="94" cy="94" r="24" fill="#ffffff"/>
+    <text x="94" y="103" text-anchor="middle"
+          font-family="'PingFang SC', 'Microsoft YaHei', sans-serif"
+          font-size="26" font-weight="700" fill="#6d5ce7">译</text>
+  </g>
+</svg>

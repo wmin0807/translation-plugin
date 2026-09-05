@@ -7,6 +7,10 @@
   <body>
     <button id="select-text" type="button">选中测试文字</button>
     <button id="simulate-ime" type="button">模拟中文输入法 FF</button>
+    <button id="simulate-empty-ff" type="button">模拟无选中 FF（应弹出输入框）</button>
+    <p>
+      <input id="typed" type="text" placeholder="在这里真实敲击 ff，应弹框且不留多余的 f" style="width: 360px" />
+    </p>
     <p id="source">The quick brown fox jumps over the lazy dog.</p>
     <script>
       const messageListeners = [];
@@ -58,6 +62,19 @@
           key: "Process",
           code: "KeyF",
           isComposing: true,
+          bubbles: true,
+          cancelable: true,
+        };
+        document.dispatchEvent(new KeyboardEvent("keydown", eventOptions));
+        document.dispatchEvent(new KeyboardEvent("keydown", eventOptions));
+      });
+
+      document.querySelector("#simulate-empty-ff").addEventListener("click", () => {
+        getSelection().removeAllRanges();
+        document.activeElement?.blur();
+        const eventOptions = {
+          key: "f",
+          code: "KeyF",
           bubbles: true,
           cancelable: true,
         };
