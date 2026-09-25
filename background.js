@@ -8,6 +8,7 @@ const {
   getProviderConfig,
   validateProviderConfig,
   createRequestBody,
+  getEnglishWord,
   getCompletionText,
 } = FFTranslatorCore;
 
@@ -83,6 +84,7 @@ async function translate(message, signal, send) {
     requestId: message.requestId,
     model: config.model,
     targetLanguage: config.targetLanguage,
+    word: message.inputMode === true ? getEnglishWord(sourceText) : "",
   });
 
   const response = await fetch(config.apiUrl, {
@@ -91,7 +93,7 @@ async function translate(message, signal, send) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify(createRequestBody(config, sourceText, true)),
+    body: JSON.stringify(createRequestBody(config, sourceText, true, message.inputMode === true)),
     signal,
   });
 

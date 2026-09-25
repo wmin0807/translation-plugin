@@ -125,6 +125,8 @@
   `;
 
   const INPUT_OVERLAY_CSS = `
+    .word-heading { margin-bottom: 6px; }
+    .word { font-size: 20px; font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
     .source {
       width: 100%;
       min-height: 74px;
@@ -324,7 +326,7 @@
     });
   }
 
-  function runTranslation(text, view) {
+  function runTranslation(text, view, inputMode = false) {
     cancelActiveRequest();
 
     const requestId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
@@ -342,6 +344,7 @@
       if (message?.requestId !== activeRequestId) return;
       if (message.type === "started") {
         view.setMeta(`${message.model} · ${message.targetLanguage}`);
+        view.setWord?.(message.word || "");
       } else if (message.type === "delta") {
         view.appendText(message.text);
       } else if (message.type === "done") {
@@ -357,7 +360,7 @@
       }
     });
 
-    activePort.postMessage({ type: "translate", requestId, sourceText: text });
+    activePort.postMessage({ type: "translate", requestId, sourceText: text, inputMode });
   }
 
   function createOverlay(snapshot) {
@@ -483,6 +486,9 @@
         </header>
         <div class="body">
           <textarea class="source" rows="3" placeholder="输入或粘贴要翻译的内容…"></textarea>
+          <div class="word-heading" hidden>
+            <span class="word" lang="en"></span>
+          </div>
           <div class="loading" hidden><span class="dots"><i></i><i></i><i></i></span><span>正在翻译…</span></div>
           <p class="result cursor" hidden></p>
           <div class="error" hidden></div>
@@ -507,10 +513,15 @@
     const copy = shadow.querySelector(".copy");
     const settings = shadow.querySelector(".settings");
     const translateButton = shadow.querySelector(".translate");
+    const wordHeading = shadow.querySelector(".word-heading");
+    const word = shadow.querySelector(".word");
     let viewRequestId = null;
 
     const view = {
       begin(requestId) {
+        wordHeading.hidden = true;
+        word.textContent = "";
+        copy.textContent = "复制译文";
         viewRequestId = requestId;
         translateButton.disabled = true;
         loading.hidden = false;
@@ -523,6 +534,11 @@
       },
       setMeta(text) {
         if (activeRequestId === viewRequestId) meta.textContent = text;
+      },
+      setWord(text) {
+        if (activeRequestId !== viewRequestId) return;
+        word.textContent = text;
+        wordHeading.hidden = !text;
       },
       appendText(text) {
         if (activeRequestId !== viewRequestId) return;
@@ -560,7 +576,7 @@
         source.focus();
         return;
       }
-      runTranslation(text, view);
+      runTranslation(text, view, true);
     }
 
     shadow.querySelector(".close").addEventListener("click", dismissOverlay);
@@ -574,7 +590,8 @@
     });
     copy.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(result.textContent || "");
+        const text = [word.textContent, result.textContent].filter(Boolean).join("\n");
+        await navigator.clipboard.writeText(text);
         copy.textContent = "已复制";
         setTimeout(() => {
           if (overlayHost === host) copy.textContent = "复制译文";

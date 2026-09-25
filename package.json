@@ -1,10 +1,10 @@
 {
   "name": "translation-plugin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Chrome/Edge extension that translates selected text after pressing FF.",
+  "description": "Chrome/Edge extension for FF selection and manual-input translation, with IPA and definitions for English words.",
   "scripts": {
-    "check": "node --check background.js && node --check content.js && node --check options.js",
+    "check": "node --check core.js && node --check background.js && node --check content.js && node --check options.js",
     "test": "node --test"
   },
   "engines": {

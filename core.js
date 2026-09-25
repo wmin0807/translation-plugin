@@ -71,13 +71,28 @@
     return `请将下面这段文字翻译成${targetLanguage}，只输出译文。`;
   }
 
-  function createRequestBody(config, sourceText, stream = true) {
+  function getEnglishWord(sourceText) {
+    const word = String(sourceText || "").trim();
+    return /^[a-zA-Z]+(?:['’\-][a-zA-Z]+)*$/.test(word) ? word : "";
+  }
+
+  function createWordPrompt(targetLanguage) {
+    return `用户输入了一个英文单词。请先给出该单词的英式和美式国际音标（IPA），再用${targetLanguage}给出词性和常用释义。
+只输出纯文本，格式如下：
+英 /音标/ · 美 /音标/
+词性：释义
+有多个常见读音时，分别标明对应词性或释义。不要编造音标；无法确定时写“音标暂不可用”。如果输入不是有效英文单词，明确说明无法识别，不要编造释义。不要输出 Markdown、例句或开场白。`;
+  }
+
+  function createRequestBody(config, sourceText, stream = true, inputMode = false) {
     const body = {
       model: config.model,
       messages: [
         {
           role: "system",
-          content: createSystemPrompt(config.targetLanguage),
+          content: inputMode && getEnglishWord(sourceText)
+            ? createWordPrompt(config.targetLanguage)
+            : createSystemPrompt(config.targetLanguage),
         },
         { role: "user", content: sourceText },
       ],
@@ -110,6 +125,7 @@
     getProviderConfig,
     validateProviderConfig,
     createSystemPrompt,
+    getEnglishWord,
     createRequestBody,
     getCompletionText,
   };

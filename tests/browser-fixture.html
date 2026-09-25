@@ -12,6 +12,7 @@
       <input id="typed" type="text" placeholder="在这里真实敲击 ff，应弹框且不留多余的 f" style="width: 360px" />
     </p>
     <p id="source">The quick brown fox jumps over the lazy dog.</p>
+    <script src="../core.js"></script>
     <script>
       const messageListeners = [];
       const disconnectListeners = [];
@@ -30,11 +31,14 @@
                     requestId: message.requestId,
                     model: "browser-test-model",
                     targetLanguage: "简体中文",
+                    word: message.inputMode ? FFTranslatorCore.getEnglishWord(message.sourceText) : "",
                   }));
                   messageListeners.forEach((listener) => listener({
                     type: "delta",
                     requestId: message.requestId,
-                    text: "敏捷的棕色狐狸跳过了懒狗。",
+                    text: message.inputMode && FFTranslatorCore.getEnglishWord(message.sourceText)
+                      ? "英 /ˈæp.əl/ · 美 /ˈæp.əl/\n名词：苹果。（测试数据）"
+                      : "敏捷的棕色狐狸跳过了懒狗。",
                   }));
                   messageListeners.forEach((listener) => listener({
                     type: "done",

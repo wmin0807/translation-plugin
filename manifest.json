@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "FF 划词翻译",
-  "version": "0.2.0",
-  "description": "选中文字后连续按两次 F，使用本地配置的大模型立即翻译。",
+  "version": "0.3.0",
+  "description": "连续按两次 F，划词或手动输入翻译；输入英文单词时显示英美音标和词性释义。支持 DeepSeek 及自定义兼容接口。",
   "permissions": [
     "storage",
     "scripting"
