@@ -71,6 +71,15 @@
     return `请将下面这段文字翻译成${targetLanguage}，只输出译文。`;
   }
 
+  function getTargetLanguage(config, sourceText, inputMode = false) {
+    const text = String(sourceText || "");
+    // Han characters cover simplified/traditional Chinese and mixed Chinese/English.
+    // Avoid switching Japanese or Korean text that also contains Han characters.
+    const isChinese = /\p{Script=Han}/u.test(text)
+      && !/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(text);
+    return inputMode && isChinese ? "英文" : config.targetLanguage;
+  }
+
   function getEnglishWord(sourceText) {
     const word = String(sourceText || "").trim();
     return /^[a-zA-Z]+(?:['’\-][a-zA-Z]+)*$/.test(word) ? word : "";
@@ -85,14 +94,15 @@
   }
 
   function createRequestBody(config, sourceText, stream = true, inputMode = false) {
+    const targetLanguage = getTargetLanguage(config, sourceText, inputMode);
     const body = {
       model: config.model,
       messages: [
         {
           role: "system",
           content: inputMode && getEnglishWord(sourceText)
-            ? createWordPrompt(config.targetLanguage)
-            : createSystemPrompt(config.targetLanguage),
+            ? createWordPrompt(targetLanguage)
+            : createSystemPrompt(targetLanguage),
         },
         { role: "user", content: sourceText },
       ],
@@ -125,6 +135,7 @@
     getProviderConfig,
     validateProviderConfig,
     createSystemPrompt,
+    getTargetLanguage,
     getEnglishWord,
     createRequestBody,
     getCompletionText,

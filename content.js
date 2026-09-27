@@ -485,7 +485,7 @@
           <button class="icon-button close" type="button" aria-label="关闭">×</button>
         </header>
         <div class="body">
-          <textarea class="source" rows="3" placeholder="输入或粘贴要翻译的内容…"></textarea>
+          <textarea class="source" rows="3" placeholder="输入或粘贴内容，中文自动翻译为英文…"></textarea>
           <div class="word-heading" hidden>
             <span class="word" lang="en"></span>
           </div>

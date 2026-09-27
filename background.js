@@ -8,6 +8,7 @@ const {
   getProviderConfig,
   validateProviderConfig,
   createRequestBody,
+  getTargetLanguage,
   getEnglishWord,
   getCompletionText,
 } = FFTranslatorCore;
@@ -83,7 +84,7 @@ async function translate(message, signal, send) {
     type: "started",
     requestId: message.requestId,
     model: config.model,
-    targetLanguage: config.targetLanguage,
+    targetLanguage: getTargetLanguage(config, sourceText, message.inputMode === true),
     word: message.inputMode === true ? getEnglishWord(sourceText) : "",
   });
 

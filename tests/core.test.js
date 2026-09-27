@@ -64,10 +64,34 @@ test("requests phonetics and meanings only for manually entered English words", 
   assert.equal(wordRequest.messages[1].content, "apple");
   assert.equal(wordRequest.stream, true);
 
-  for (const [source, inputMode] of [["apple", false], ["hello world", true], ["你好", true]]) {
+  for (const [source, inputMode] of [["apple", false], ["hello world", true], ["你好", false]]) {
     const body = core.createRequestBody(config, source, true, inputMode);
     assert.equal(body.messages[0].content, core.createSystemPrompt("日文"));
   }
+});
+
+test("manual Chinese input targets English for both providers without changing settings", () => {
+  for (const provider of ["deepseek", "custom"]) {
+    const config = Object.freeze(core.getProviderConfig({ provider, targetLanguage: "简体中文" }));
+    for (const source of ["你好", "  請確認會議時間。\n", "请帮我 review 这段代码", "𠮷"]) {
+      const body = core.createRequestBody(config, source, true, true);
+      assert.equal(body.messages[0].content, core.createSystemPrompt("英文"));
+      assert.equal(body.messages[1].content, source);
+      assert.equal(core.getTargetLanguage(config, source, true), "英文");
+      assert.equal(core.getTargetLanguage(config, source, false), "简体中文");
+    }
+    assert.equal(config.targetLanguage, "简体中文");
+  }
+});
+
+test("other manual text keeps the configured target language", () => {
+  const config = core.getProviderConfig({ targetLanguage: "法文" });
+  for (const source of ["hello world", "123!?", "", "こんにちは世界", "東京タワー", "한국 漢字"]) {
+    assert.equal(core.getTargetLanguage(config, source, true), "法文");
+    assert.equal(core.createRequestBody(config, source, true, true).messages[0].content,
+      core.createSystemPrompt("法文"));
+  }
+  assert.equal(core.getTargetLanguage(config, "你好", true), "英文");
 });
 
 test("validates API credentials, models and URL schemes", () => {

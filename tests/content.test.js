@@ -81,7 +81,8 @@ function createBrowser() {
     const request = requests[index];
     ports[index].receive({ type: "started", requestId: request.requestId,
       word: request.inputMode ? core.getEnglishWord(request.sourceText) : "",
-      model: "test", targetLanguage: "简体中文" });
+      model: "test", targetLanguage: core.getTargetLanguage(
+        { targetLanguage: "简体中文" }, request.sourceText, request.inputMode) });
     ports[index].receive({ type: "delta", requestId: request.requestId, text });
     ports[index].receive({ type: "done", requestId: request.requestId });
   };
@@ -124,4 +125,23 @@ test("retranslation resets word UI and ignores stale translation events", () => 
   assert.equal(browser.get(".word-heading").hidden, false);
   browser.key("Escape");
   assert.equal(browser.host.isConnected, false);
+});
+
+test("manual Chinese results show English as the target and copy only the translation", async () => {
+  const browser = createBrowser();
+  browser.submit("apple");
+  browser.respond();
+  browser.submit("  你好  ");
+  assert.equal(browser.requests[1].inputMode, true);
+  assert.equal(browser.requests[1].sourceText, "你好");
+  browser.respond(1, "Hello");
+  assert.equal(browser.get(".meta").textContent, "test · 英文");
+  assert.equal(browser.get(".word-heading").hidden, true);
+  assert.equal(browser.get(".result").textContent, "Hello");
+  await browser.get(".copy").dispatch("click");
+  assert.equal(browser.copied, "Hello");
+
+  browser.submit("hello world");
+  browser.respond(2, "你好，世界");
+  assert.equal(browser.get(".meta").textContent, "test · 简体中文");
 });
