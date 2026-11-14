@@ -33,7 +33,11 @@
       align-items: center;
       gap: 9px;
       border-bottom: 1px solid rgba(15, 23, 42, .08);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
+    .header.dragging { cursor: grabbing; }
     .mark {
       width: 25px;
       height: 25px;
@@ -125,6 +129,13 @@
   `;
 
   const INPUT_OVERLAY_CSS = `
+    .translate { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .translate kbd {
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, .45);
+      font: inherit;
+      font-size: 11px;
+    }
     .word-heading { margin-bottom: 6px; }
     .word { font-size: 20px; font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
     .source {
@@ -402,6 +413,7 @@
     overlayHost = host;
 
     const card = shadow.querySelector(".card");
+    const header = shadow.querySelector(".header");
     const meta = shadow.querySelector(".meta");
     const loading = shadow.querySelector(".loading");
     const result = shadow.querySelector(".result");
@@ -425,7 +437,10 @@
       }
     });
 
-    requestAnimationFrame(() => positionOverlay(host, card, snapshot.rect));
+    requestAnimationFrame(() => {
+      positionOverlay(host, card, snapshot.rect);
+      enableOverlayDrag(host, header);
+    });
 
     return {
       begin(requestId) {
@@ -472,8 +487,6 @@
       "font-synthesis: none",
     ].join(";");
 
-    const shortcutHint = /mac/i.test(navigator.platform || "") ? "⌘ + Enter 翻译" : "Ctrl + Enter 翻译";
-
     const shadow = host.attachShadow({ mode: "closed" });
     shadow.innerHTML = `
       <style>${OVERLAY_CSS}${INPUT_OVERLAY_CSS}</style>
@@ -481,7 +494,7 @@
         <header class="header">
           <span class="mark">FF</span>
           <span class="title">自定义翻译</span>
-          <span class="meta">${shortcutHint}</span>
+          <span class="meta"></span>
           <button class="icon-button close" type="button" aria-label="关闭">×</button>
         </header>
         <div class="body">
@@ -496,7 +509,9 @@
         <footer class="footer">
           <button class="action settings" type="button" hidden>打开设置</button>
           <button class="action copy" type="button" hidden>复制译文</button>
-          <button class="action primary translate" type="button">翻译</button>
+          <button class="action primary translate" type="button" aria-keyshortcuts="Shift+Enter">
+            翻译 <kbd aria-hidden="true">Shift + Enter</kbd>
+          </button>
         </footer>
       </section>
     `;
@@ -505,6 +520,7 @@
     overlayHost = host;
 
     const card = shadow.querySelector(".card");
+    const header = shadow.querySelector(".header");
     const meta = shadow.querySelector(".meta");
     const source = shadow.querySelector(".source");
     const loading = shadow.querySelector(".loading");
@@ -583,10 +599,12 @@
     translateButton.addEventListener("click", submit);
     settings.addEventListener("click", () => activePort?.postMessage({ type: "open-options" }));
     source.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        submit();
-      }
+      if (event.key !== "Enter" || event.isComposing) return;
+      if (!(event.shiftKey || event.metaKey || event.ctrlKey)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat) submit();
     });
     copy.addEventListener("click", async () => {
       try {
@@ -601,9 +619,48 @@
       }
     });
 
-    requestAnimationFrame(() => positionOverlayCentered(host, card));
+    requestAnimationFrame(() => {
+      positionOverlayCentered(host, card);
+      enableOverlayDrag(host, header);
+    });
 
     return view;
+  }
+
+  function enableOverlayDrag(host, header) {
+    let drag = null;
+
+    header.addEventListener("pointerdown", (event) => {
+      if (drag || !event.isPrimary || event.button !== 0 || event.target.closest("button")) return;
+
+      const { left, top } = host.getBoundingClientRect();
+      drag = {
+        pointerId: event.pointerId,
+        offsetX: event.clientX - left,
+        offsetY: event.clientY - top,
+      };
+      header.setPointerCapture(event.pointerId);
+      header.classList.add("dragging");
+      event.preventDefault();
+    });
+
+    header.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== drag?.pointerId) return;
+
+      const { width, height } = host.getBoundingClientRect();
+      const maxLeft = window.innerWidth - width - OVERLAY_MARGIN;
+      const maxTop = window.innerHeight - height - OVERLAY_MARGIN;
+      const left = Math.max(OVERLAY_MARGIN, Math.min(event.clientX - drag.offsetX, maxLeft));
+      const top = Math.max(OVERLAY_MARGIN, Math.min(event.clientY - drag.offsetY, maxTop));
+      host.style.left = `${left}px`;
+      host.style.top = `${top}px`;
+    });
+
+    header.addEventListener("lostpointercapture", (event) => {
+      if (event.pointerId !== drag?.pointerId) return;
+      drag = null;
+      header.classList.remove("dragging");
+    });
   }
 
   function positionOverlay(host, card, selectionRect) {

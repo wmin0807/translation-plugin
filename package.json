@@ -1,6 +1,6 @@
 {
   "name": "translation-plugin",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "private": true,
   "description": "Chrome/Edge extension for FF selection and manual-input translation, with IPA and definitions for English words.",
   "scripts": {
